@@ -294,13 +294,14 @@ void MediaPlayerPrivateGStreamerOwr::createGSTAudioSinkBin()
     GRefPtr<GstElement> sink = gst_element_factory_make("autoaudiosink", nullptr);
     GstChildProxy* childProxy = GST_CHILD_PROXY(sink.get());
     gst_element_set_state(sink.get(), GST_STATE_READY);
-    GstElementFactory* factory = gst_element_get_factory(GST_ELEMENT(gst_child_proxy_get_child_by_index(childProxy, 0)));
+    GRefPtr<GstElement> platformSink = adoptGRef(GST_ELEMENT(gst_child_proxy_get_child_by_index(childProxy, 0)));
+    GstElementFactory* factory = gst_element_get_factory(platformSink.get());
 
     // Dispose now un-needed autoaudiosink.
     gst_element_set_state(sink.get(), GST_STATE_NULL);
 
     // Create a fresh new audio sink compatible with the platform.
-    m_audioSink = adoptGRef(gst_element_factory_create(factory, nullptr));
+    m_audioSink = gst_element_factory_create(factory, nullptr);
     m_audioRenderer = adoptGRef(owr_gst_audio_renderer_new(m_audioSink.get()));
 }
 
